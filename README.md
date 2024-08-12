@@ -24,7 +24,9 @@ Status Updates: Shows connection status and subscription status.
 # MQTT Client Application
 
 Connect to Broker: Allows connection to an MQTT broker using the IP address and port.
+
 Publish Messages: Send messages to a specified topic.
+
 Subscribe and View Messages: Receive and display messages from a subscribed topic.
 
 
