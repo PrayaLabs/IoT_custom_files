@@ -17,8 +17,11 @@ Allows users to connect to an MQTT broker, publish messages, and view subscribed
 # Web Application
 
 Connect to MQTT Broker: Enter the IP address of the MQTT broker to establish a connection.
+
 Subscribe to Topic: Enter the topic name to subscribe to and receive messages.
+
 Display Messages: View incoming messages in a scrollable message box.
+
 Status Updates: Shows connection status and subscription status.
 
 # MQTT Client Application
