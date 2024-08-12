@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MQTT Control Panel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            overflow-y: auto; /* Allow vertical scrolling */
+            min-height: 100vh; /* Ensure the body takes at least full height */
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 800px; /* Reduced max width for better responsiveness */
+            margin: 20px auto; /* Center the container with margin */
+        }
+        .logo {
+            display: block;
+            margin: 0 auto;
+            max-width: 300px; /* Adjust logo size for medium visibility */
+            height: auto; /* Maintain aspect ratio */
+        }
+        .title {
+            text-align: center;
+            font-size: 24px;
+            margin: 10px 0;
+        }
+        .card {
+            background-color: #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-light-on {
+            background-color: #28a745;
+        }
+        .btn-light-off {
+            background-color: #dc3545;
+        }
+        .btn-servo-start {
+            background-color: #007bff;
+        }
+        .btn-servo-stop {
+            background-color: #6c757d;
+        }
+        .btn-subscribe {
+            background-color: #17a2b8;
+        }
+        .status {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .text-box {
+            margin: 10px;
+            padding: 10px;
+            width: 100%;
+            max-width: 400px;
+        }
+        .feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .feedback.success {
+            color: green;
+        }
+        .feedback.error {
+            color: red;
+        }
+        .feedback-info {
+            color: blue;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 600px) {
+            .logo {
+                max-width: 100px; /* Smaller logo for small screens */
+            }
+            .title {
+                font-size: 20px; /* Smaller title on small screens */
+            }
+            .text-box {
+                max-width: 90%; /* Adjust text box width on small screens */
+            }
+            .btn {
+                padding: 8px 16px; /* Adjust button size for small screens */
+                font-size: 14px; /* Smaller button text on small screens */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="https://prayalabs.com/sites/default/files/logo-new.png" alt="Company Logo" class="logo">
+        <h1 class="title">MQTT Client Master</h1>
+
+        <!-- Connection Section -->
+        <div class="card">
+            <h2>Connect to MQTT Broker</h2>
+            <input type="text" id="brokerIp" class="text-box" placeholder="Enter Broker IP Address">
+            <button class="btn btn-light-on" onclick="connectBroker()">Connect</button>
+            <div id="connectionStatus" class="status">Not Connected</div>
+        </div>
+        
+        <!-- Light Control Card -->
+        <div class="card">
+            <h2>Light Control</h2>
+            <input type="text" id="lightTopic" class="text-box" placeholder="Enter Light Topic">
+            <button class="btn btn-light-on" onclick="publishMessage('on', 'light')">Light On</button>
+            <button class="btn btn-light-off" onclick="publishMessage('off', 'light')">Light Off</button>
+            <div id="lightFeedback" class="feedback"></div>
+        </div>
+
+        <!-- Servo Control Card -->
+        <div class="card">
+            <h2>Servo Control</h2>
+            <input type="text" id="servoTopic" class="text-box" placeholder="Enter Servo Topic">
+            <button class="btn btn-servo-start" onclick="publishMessage('start', 'servo')">Start Servo</button>
+            <button class="btn btn-servo-stop" onclick="publishMessage('stop', 'servo')">Stop Servo</button>
+            <div id="servoFeedback" class="feedback"></div>
+        </div>
+        
+        <!-- Data Subscription Card -->
+        <div class="card">
+            <h2>Data Subscription</h2>
+            <input type="text" id="subscribeTopic" class="text-box" placeholder="Enter Subscription Topic">
+            <button class="btn btn-subscribe" onclick="subscribeTopic()">Subscribe</button>
+            <div id="dataFeed" class="feedback-info">Subscribed Data will appear here...</div>
+        </div>
+    </div>
+
+    <!-- Include MQTT.js library -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script>
+        let client;
+        let connected = false;
+
+        function connectBroker() {
+            const brokerIp = document.getElementById('brokerIp').value;
+            if (!brokerIp) {
+                updateStatus('Please enter a broker IP address.', 'error');
+                return;
+            }
+
+            const brokerUrl = `ws://${brokerIp}:8080`;  // WebSocket URL for MQTT
+            client = mqtt.connect(brokerUrl);
+
+            client.on('connect', () => {
+                connected = true;
+                updateStatus('Connected to MQTT Broker', 'success');
+            });
+
+            client.on('error', (error) => {
+                connected = false;
+                updateStatus('Connection Error: ' + error, 'error');
+            });
+        }
+
+        function publishMessage(message, type) {
+            if (!connected) {
+                updateStatus('Not Connected to MQTT Broker', 'error');
+                return;
+            }
+
+            const topic = type === 'light' ? document.getElementById('lightTopic').value : document.getElementById('servoTopic').value;
+            client.publish(topic, message, (err) => {
+                const feedbackElement = document.getElementById(type === 'light' ? 'lightFeedback' : 'servoFeedback');
+                if (err) {
+                    feedbackElement.textContent = 'Error Publishing Message: ' + err;
+                    feedbackElement.className = 'feedback error';
+                } else {
+                    feedbackElement.textContent = `Message "${message}" published successfully`;
+                    feedbackElement.className = 'feedback success';
+                }
+            });
+        }
+
+        function subscribeTopic() {
+            if (!connected) {
+                updateStatus('Not Connected to MQTT Broker', 'error');
+                return;
+            }
+
+            const topic = document.getElementById('subscribeTopic').value;
+            if (!topic) {
+                updateStatus('Please enter a topic to subscribe to.', 'error');
+                return;
+            }
+
+            client.subscribe(topic, (err) => {
+                if (err) {
+                    updateStatus('Subscription Error: ' + err, 'error');
+                } else {
+                    updateStatus(`Subscribed to ${topic}`, 'success');
+                }
+            });
+
+            client.on('message', (topic, message) => {
+                if (topic === document.getElementById('subscribeTopic').value) {
+                    document.getElementById('dataFeed').textContent = `Received message on ${topic}: ${message.toString()}`;
+                }
+            });
+        }
+
+        function updateStatus(message, type) {
+            const statusElement = document.getElementById('connectionStatus');
+            statusElement.textContent = message;
+            statusElement.className = 'status ' + (type === 'success' ? 'success' : 'error');
+        }
+    </script>
+</body>
+</html>
