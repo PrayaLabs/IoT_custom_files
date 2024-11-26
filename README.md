@@ -1,6 +1,9 @@
 # IoT_custom_files
 This repository contains a set of HTML, JavaScript, and CSS files for building a simple MQTT client web application. The application connects to an MQTT broker and allows users to subscribe to a topic and view incoming messages.
 
+# Download and Install the MQTT Broker
+Download Mosquitto MQTT Broker - https://mosquitto.org/
+
 Project Overview
 The project consists of two main components:
 
