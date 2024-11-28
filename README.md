@@ -4,8 +4,11 @@ This repository contains a set of HTML, JavaScript, and CSS files for building a
 # Download and Install the following softwares, libraries and drivers
 
 Download Arduino Software - https://downloads.arduino.cc/arduino-ide/arduino-ide_2.3.3_Windows_64bit.msi
+
 ESP8266 Setup Documentation - https://drive.google.com/file/d/104BndKRZliwl0Bn9NMv2nObRnvEEN4JV/view?usp=sharing
+
 Download the Driver - https://www.driverscape.com/files/share/b768daedadcc5c22f204a7f9ccd72a84.zip
+
 Download Mosquitto MQTT Broker - https://mosquitto.org/
 
 Repository Overview
